@@ -18,34 +18,55 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.pochcompose.R
 import com.example.pochcompose.ui.theme.Purple40
 import com.example.pochcompose.ui.theme.Purple80
 
 @Composable
-fun SplashScreen(navigateToWelcome: () -> Unit) {
+fun SplashScreen(
+    navigateToWelcome: () -> Unit,
+    navigateToHome: () -> Unit,
+) {
+
+    val splashViewModel: SplashViewModel = hiltViewModel()
+    val splashUIState =
+        splashViewModel.splashUIState.collectAsStateWithLifecycle(initialValue = SplashUIState.Loading).value
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
         modifier = Modifier.fillMaxSize()
     ) {
-        val rotate = remember { Animatable(0f) }
-        LaunchedEffect(key1 = true){
-          rotate.animateTo(
-              targetValue = 800f,
-              animationSpec = tween(
-                  durationMillis = 7000,
-                  delayMillis = 200
-              )
-          )
+
+        when (splashUIState) {
+            SplashUIState.Loaded -> {
+                val rotate = remember { Animatable(0f) }
+                LaunchedEffect(key1 = true) {
+                    rotate.animateTo(
+                        targetValue = 360f,
+                        animationSpec = tween(
+                            durationMillis = 2000,
+                            delayMillis = 200
+                        )
+                    )
+                    if (splashViewModel.onBoardingCompleted.value)
+                        navigateToHome()
+                    else
+                        navigateToWelcome()
+                }
+                SplashScreenStruture(degree = rotate.value)
+            }
+
+            SplashUIState.Loading -> {}
         }
-        SplashScreenStruture(degree = rotate.value)
     }
 }
 
 @Composable
-fun SplashScreenStruture(degree:Float) {
-    if(isSystemInDarkTheme()){
+fun SplashScreenStruture(degree: Float) {
+    if (isSystemInDarkTheme()) {
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
@@ -57,7 +78,7 @@ fun SplashScreenStruture(degree:Float) {
                 contentDescription = stringResource(R.string.heroes_logo)
             )
         }
-    }else{
+    } else {
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
