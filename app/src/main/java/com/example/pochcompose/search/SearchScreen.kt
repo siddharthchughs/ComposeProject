@@ -1,13 +1,11 @@
-package com.example.pochcompose.home
+package com.example.pochcompose.search
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
@@ -30,42 +28,24 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.pochcompose.R
 
 @Composable
-fun HomeScreen() {
-    val homeViewModel: HomeViewModel = hiltViewModel()
-    val homeUiState =
-        homeViewModel.homeUiState.collectAsStateWithLifecycle(initialValue = HomeUiState.Loading).value
+fun SearchScreen(){
+        val searchViewModel: SearchViewModel = hiltViewModel()
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top,
-        modifier = Modifier.fillMaxSize()
-    ) {
-        HomeScreenToolbar()
-        HomeScreenStructure(homeUiState = homeUiState)
-    }
-}
-
-@Composable
-fun HomeScreenStructure(homeUiState: HomeUiState) {
-
-    when (homeUiState) {
-        is HomeUiState.Loading -> {
-            HomeScreenProgressBar()
-        }
-
-        is HomeUiState.Loaded -> {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top,
+            modifier = Modifier.fillMaxSize()
+        ) {
 
         }
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreenToolbar() {
+fun SearchScreenToolbar() {
     var isDIsplayed by remember { mutableStateOf(false) }
 
     TopAppBar(modifier = Modifier.background(MaterialTheme.colors.primary), title = {
@@ -111,19 +91,5 @@ fun HomeScreenToolbar() {
     Divider(
         modifier = Modifier.fillMaxWidth(), thickness = 1.dp, color = MaterialTheme.colors.primary
     )
-}
 
-@Composable
-fun HomeScreenProgressBar() {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier.fillMaxSize()
-    ) {
-        Spacer(Modifier.fillMaxSize(1f))
-        CircularProgressIndicator(
-            color = MaterialTheme.colors.primary
-        )
-        Spacer(Modifier.fillMaxSize(1f))
-    }
 }
