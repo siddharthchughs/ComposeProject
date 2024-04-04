@@ -13,3 +13,8 @@ val Colors.activeIndicators
 val Colors.inactiveIndicators
     @Composable
     get() = if(isLight) Purple40 else Color.DarkGray
+
+
+fun String.imageLoad(heroImage:String):String{
+    return this+heroImage
+}
