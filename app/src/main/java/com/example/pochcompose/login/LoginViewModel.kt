@@ -48,7 +48,6 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-
     fun onUsernameChange(username: String) {
         usernameText.value = username
     }
@@ -68,7 +67,6 @@ class LoginViewModel @Inject constructor(
                 loginResult.value = LoginResult.LoggedIn
             else
                 loginResult.value = LoginResult.Failure(error = "Invalid Login")
-
         }
     }
 

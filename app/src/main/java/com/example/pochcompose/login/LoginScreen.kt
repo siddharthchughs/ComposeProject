@@ -149,7 +149,7 @@ fun LoginUsernameInputField(
     singleLine: Boolean,
     maxLine: Int = 1,
     modifier: Modifier = Modifier,
-    textStyle: TextStyle,
+    textStyle: TextStyle
 ) {
 
     val keyboardController = LocalSoftwareKeyboardController.current

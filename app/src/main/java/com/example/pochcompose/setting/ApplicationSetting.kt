@@ -15,7 +15,7 @@ import javax.inject.Inject
 private val USER_ONBOARDING_PREFERENCE = booleanPreferencesKey("onBoardPreferences")
 private val BASE_URL_PREFERENCE = stringPreferencesKey("baseUrl")
 private val USER_TOKEN_PREFERENCE = stringPreferencesKey("token")
-
+private const val BASEURL = "http://192.168.1.3:8080"
 interface ApplicationSetting {
     fun token():Flow<String>
     suspend fun saveToken(storeToken:String)
@@ -58,7 +58,7 @@ class ApplicationSettingImpl @Inject constructor(
                     throw exception
                 }
             }.map { preferences ->
-                val baseUrl = preferences[BASE_URL_PREFERENCE] ?: "http://192.168.1.4:8080"
+                val baseUrl = preferences[BASE_URL_PREFERENCE] ?: BASEURL
                 baseUrl
             }
     }
