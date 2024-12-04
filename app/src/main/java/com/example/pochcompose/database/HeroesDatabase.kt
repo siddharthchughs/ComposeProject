@@ -11,9 +11,11 @@ import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import kotlinx.serialization.Serializable
 
+@Serializable
 @Entity(tableName = "heroes")
-data class Hero(
+ data class Hero(
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "heroId") val id: Int,
     @ColumnInfo(name = "heroName") val name: String,
@@ -45,16 +47,17 @@ interface HeroesDao {
     fun getHeroById(Id: Int): Hero
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun addHeroes(heroes: List<Hero>)
+    suspend fun addHeroes(heroEntities: List<Hero>)
 
     @Query("""DELETE FROM heroes""")
     suspend fun deleteHero()
 }
 
-@Entity(tableName = "hero_remote_key")
-data class HeroesRemoteKey(
+@Entity(tableName = "hero_remote_keys")
+data class HeroesRemoteKeys(
     @PrimaryKey(autoGenerate = true)
-    val id: Int, val prevKey: Int?,
+    val id: Int,
+    val prevKey: Int?,
     val nextKey: Int
 )
 
@@ -62,19 +65,19 @@ data class HeroesRemoteKey(
 interface HeroesRemoteDao {
     @Query(
         """
-        SELECT  *  FROM hero_remote_key where id = :id
+        SELECT  *  FROM hero_remote_keys where id = :id
     """
     )
-    suspend fun getRemoteKey(id: Int): HeroesRemoteKey
+    suspend fun getRemoteKeys(id: Int): HeroesRemoteKeys
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun addAllRemoteKey(heroRemoteKey: List<HeroesRemoteKey>)
+    suspend fun addAllRemoteKey(heroRemoteKey: List<HeroesRemoteKeys>)
 
-    @Query("""DELETE FROM hero_remote_key""")
+    @Query("""DELETE FROM hero_remote_keys""")
     suspend fun deleteAllRemoteKey()
 }
 
-@Database(entities = [Hero::class, HeroesRemoteKey::class], version = 1, exportSchema = false)
+@Database(entities = [Hero::class, HeroesRemoteKeys::class], version = 1, exportSchema = false)
 @TypeConverters(CustomConverter::class)
 abstract class HeroesDatabase : RoomDatabase() {
     abstract fun heroesDao(): HeroesDao

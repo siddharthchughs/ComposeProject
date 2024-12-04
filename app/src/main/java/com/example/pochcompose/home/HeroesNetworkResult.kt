@@ -1,5 +1,6 @@
 package com.example.pochcompose.home
 
+import com.example.pochcompose.database.Hero
 import com.example.pochcompose.setting.ApplicationSetting
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.CoroutineDispatcher
@@ -20,7 +21,7 @@ import javax.inject.Inject
 
 sealed interface HeroesNetworkResult {
     data class AvailableHeroesList(
-        val heroes: HeroesNetworkClient.HeroesResponseModel
+        val heroesResponse: HeroesNetworkClient.ApiResponseModel
     ) : HeroesNetworkResult
     data class UnAuthorizedError(
         val code: Int
@@ -35,30 +36,19 @@ sealed interface HeroesNetworkResult {
 interface HeroesNetworkLocalDataSource {
     suspend fun getHeroesList(
         userAgent: String,
-        baseUrl: String
+        baseUrl: String,
+        page: Int
     ): HeroesNetworkResult
 }
 
 interface HeroesNetworkClient {
 
     @Serializable
-    data class HeroesResponseModel(
+    data class ApiResponseModel(
+        val success: Boolean,
+        val prevPage:Int,
+        val nextPage:Int,
         val heroes : List<Hero>
-    )
-
-    @Serializable
-    data class Hero(
-        val id: Int,
-        val name: String,
-        val image: String,
-        val about: String,
-        val rating: Double,
-        val power: Int,
-        val month: String,
-        val day: String,
-        val family: List<String>,
-        val abilities: List<String>,
-        val natureTypes: List<String>
     )
 
     @GET("/downloadContacts")
@@ -66,7 +56,7 @@ interface HeroesNetworkClient {
         @Header("User-Agent") userAgent: String,
         @Header("baseurl") baseUrl: String,
         @Query("page") page: Int = 1
-    ): Response<HeroesResponseModel>
+    ): Response<ApiResponseModel>
 }
 
 class HeroesLocalDataSourceImpl @Inject constructor(
@@ -77,20 +67,21 @@ class HeroesLocalDataSourceImpl @Inject constructor(
     override suspend fun getHeroesList(
         userAgent: String,
         baseUrl: String,
+        page: Int
     ): HeroesNetworkResult = withContext(dispatcher) {
         try {
             val client = clientNetworkFactory.clientFactory(applicationSetting.getBaseUrl().first())
             val response = client.getAllHeroes(
                 userAgent = "User-Agent",
-                baseUrl = baseUrl
+                baseUrl = baseUrl,
+                page = page
             )
 
             when {
                 response.isSuccessful -> {
                     val heroList = response.body()!!
-                    Timber.i("Response :: ${heroList}")
-                    HeroesNetworkResult.AvailableHeroesList(
-                        heroList)
+                    Timber.i("Response :: ${heroList.heroes}")
+                    HeroesNetworkResult.AvailableHeroesList(heroList)
                 }
 
                 response.code() == 401 -> {
@@ -116,7 +107,7 @@ class HeroesClientNetworkFactory @Inject constructor(){
             .addInterceptor(loggingInterceptor)
             .connectTimeout(30, TimeUnit.MINUTES)
             .writeTimeout(30, TimeUnit.MILLISECONDS)
-            .callTimeout(10, TimeUnit.SECONDS)
+            .callTimeout(35, TimeUnit.SECONDS)
             .build()
         val gsonBuilder = GsonBuilder().create()
         val retrofit = Retrofit.Builder()

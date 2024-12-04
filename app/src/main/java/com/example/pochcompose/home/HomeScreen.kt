@@ -5,6 +5,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,12 +19,16 @@ import androidx.compose.material.Card
 import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.TopAppBar
@@ -34,7 +39,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -42,7 +47,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.rememberAsyncImagePainter
+import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.example.pochcompose.R
 
@@ -149,10 +154,11 @@ fun HomeScreenToolbar(
 }
 
 @Composable
-fun HeroesList(heroesList: List<HeroesUIState>) {
+fun HeroesList(heroesList: List<HomeUiState.HeroesUIState>) {
     Column {
-        LazyColumn(modifier = Modifier.fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 8.dp)
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 8.dp)
         ) {
             items(items = heroesList, key = {
                 it.id
@@ -166,35 +172,56 @@ fun HeroesList(heroesList: List<HeroesUIState>) {
 @SuppressLint("SuspiciousIndentation")
 @Composable
 fun HeroItem(
-    heroesUIState: HeroesUIState
+    heroesUIState: HomeUiState.HeroesUIState
 ) {
-        Card(modifier = Modifier.fillMaxWidth(),
-            elevation = 2.dp,
-            shape = MaterialTheme.shapes.medium
-            ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-            ) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = 2.dp,
+        shape = MaterialTheme.shapes.medium
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+        ) {
 
-                HeroImage(image = heroesUIState.image)
-                Divider(
-                    modifier = Modifier.fillMaxWidth()
-                        .padding(horizontal = 2.dp),
-                    color = MaterialTheme.colors.primary,
-                    thickness = 1.dp
+            HeroImage(image = heroesUIState.image)
+            Divider(
+                modifier = Modifier.fillMaxWidth()
+                    .padding(horizontal = 2.dp),
+                color = MaterialTheme.colors.primary,
+                thickness = 1.dp
+            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                SingleTextView(
+                    name = heroesUIState.name
                 )
-                SingleTextView(name = heroesUIState.name)
+                HeroRatingBar(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 16.dp)
+                    ,
+                    rating = heroesUIState.rating,
+                    maxRating = 5,
+                    color = MaterialTheme.colors.primary
+                )
             }
         }
-    Spacer(modifier = Modifier
-        .height(12.dp))
+    }
+    Spacer(
+        modifier = Modifier
+            .height(12.dp)
+    )
 
 }
 
 @Composable
-fun SingleTextView(name: String) {
+fun SingleTextView(
+    name: String
+) {
     Text(
         modifier = Modifier
             .padding(horizontal = 12.dp, vertical = 8.dp),
@@ -208,21 +235,51 @@ fun SingleTextView(name: String) {
 
 @Composable
 fun HeroImage(image: String) {
-    val painter = rememberAsyncImagePainter(
-        model = ImageRequest.Builder(LocalContext.current)
-            .data(image)
-            .build(),
-    )
-    Image(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(300.dp)
-            .padding(horizontal = 12.dp),
-        contentScale = ContentScale.Fit,
-        painter = painter,
-        contentDescription = stringResource(R.string.description)
-    )
+        SubcomposeAsyncImage(
+            alignment = Alignment.Center,
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(image)
+                .crossfade(true)
+                .build(),
+            loading = {
+                CircularProgressIndicator()
+            },
+            contentDescription = stringResource(R.string.description)
+        )
+//    val painter = rememberAsyncImagePainter(
+//        model = ImageRequest.Builder(LocalContext.current)
+//            .data(image)
+//            .crossfade(true)
+//            .build(),
+//        placeholder = painterResource(R.drawable.ic_launcher_background)
+//
+//    )
+//    Image(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .height(300.dp),
+//        contentScale = ContentScale.Fit,
+//        painter = painter,
+//        contentDescription = stringResource(R.string.description)
+//    )
+}
 
+@Composable
+fun HeroRatingBar(
+    modifier: Modifier,
+    rating: Double,
+    maxRating:Int,
+    color: Color
+) {
+    repeat(maxRating){it->
+        Icon(
+            modifier = modifier,
+            imageVector = if(it<rating.toInt())Icons.Default.Star else Icons.Outlined.Star,
+            contentDescription = stringResource(R.string.hero_rating),
+            tint = if(it<rating.toInt()) color else Color.DarkGray
+        )
+
+    }
 }
 
 @Composable
